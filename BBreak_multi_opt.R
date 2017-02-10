@@ -85,7 +85,7 @@ for (sym in symbol){
 
 # initialize the portfolio, account and orders. Starting equity $10K and assuming data post 1995.
 initPortf(portfolio.st, symbols = symbol, initDate = "1995-01-01")
-initAcct(account.st, portfolios = portfolio.st, initEq = 10000, initDate = "1995-01-01")
+initAcct(account.st, portfolios = portfolio.st, initEq = 1000000, initDate = "1995-01-01")
 initOrders(portfolio = portfolio.st, initDate = "1995-01-01")
 
 # define the strategy with a position limit to prevent multiple trades in a direction

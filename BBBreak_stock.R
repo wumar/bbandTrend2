@@ -11,9 +11,9 @@ Sys.setenv(TZ='UTC')
 strat        <- "BB1"       # Give the stratgey a name variable
 portfolio.st <- "BB1"       # Portfolio name
 account.st   <- "BB1"       # Account name
-maPeriod     <- 200          # moving average period
+maPeriod     <- 100         # moving average period
 bbBreakout   <- 2           # multiple of SD for breakout 
-bbClose      <- -2           # multiple of SD for close
+bbClose      <- 0           # multiple of SD for close
 
 # This function sets the standard devation parameter to pass to the 
 # Bolinger Band indicator function
@@ -67,7 +67,7 @@ getSymbols("^GSPC", from = '1995-01-01')
 # initialize the portfolio, account and orders. Starting equity $10K and assuming data post 1998.
 
 initPortf(portfolio.st, symbols = symbol, initDate = "1995-01-01")
-initAcct(account.st, portfolios = portfolio.st, initEq = 10000, initDate = "1995-01-01")
+initAcct(account.st, portfolios = portfolio.st, initEq = 1000000, initDate = "1995-01-01")
 initOrders(portfolio = portfolio.st, initDate = "1995-01-01")
 
 # define the strategy with a position limit to prevent multiple trades in a direction
