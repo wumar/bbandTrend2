@@ -3,8 +3,10 @@
 # defined as the close price crossing a  number of standard deviations away from the central
 # moving average. THe position is closed when the close price crosses back below another number
 # of standard deviations from the central moving average. Negative number means the other way.
-# Here we incorporate optimization via paramsets, using the bbBreakout variable first, the adding
-# the moving average.
+# Here we incorporate optimization via paramsets for the bband breakout and the moving average
+# I have been unable to get paramsets working for the close due to the need to i) set multiple 
+# variables with one function called from the indicator and ii) optimize a parameter in the 
+# sigCrossover function
 
 library(quantstrat)       # Required package for strategy back testing
 library(doParallel)       # For parrallel optimization
@@ -17,9 +19,9 @@ csvDir       <- "C:/Users/RJK/Documents/SpiderOak Hive/Financial/commodities_dat
 strat        <- "BB1"       # Give the stratgey a name variable
 portfolio.st <- "BB1"       # Portfolio name
 account.st   <- "BB1"       # Account name
-maPeriod     <- seq(50, 200, by = 50)       # moving average period
-bbBreakout   <- seq(1, 4, by = 1)           # multiple of SD for breakout 
-bbClose      <- -1                          # multiple of SD for close
+maPeriod     <- seq(20, 150, by = 10)       # moving average period
+bbBreakout   <- seq(1, 3, by = 0.25)           # multiple of SD for breakout 
+bbClose      <- 0                          # multiple of SD for close
 
 # This function sets the standard devation parameter to pass to the 
 # Bolinger Band indicator function
@@ -58,10 +60,8 @@ shortExitBand <- function(user_SD){
   }
 }
 
-currency('USD')             # set USD as a base currency
-
-# Universe selection
-symbol <- c("LSU","RR","CO","NG","OJ")
+currency('USD')                         # set USD as a base currency
+symbol <- c("LSU","RR","CO","NG","OJ")  # Universe selection
 
 # if run previously, run this code
 rm.strat(portfolio.st)
@@ -82,8 +82,7 @@ for (sym in symbol){
   assign(sym, no_dup)
 }
 
-# initialize the portfolio, account and orders. Starting equity $10K and assuming data post 1998.
-
+# initialize the portfolio, account and orders. Starting equity $10K and assuming data post 1995.
 initPortf(portfolio.st, symbols = symbol, initDate = "1995-01-01")
 initAcct(account.st, portfolios = portfolio.st, initEq = 10000, initDate = "1995-01-01")
 initOrders(portfolio = portfolio.st, initDate = "1995-01-01")
@@ -96,7 +95,6 @@ for (sym in symbol){
 }
 
 # Add the indicators - One bband for the breakout another for the stop
-
 add.indicator(strat, name = "BBands", 
               arguments = list(HLC = quote(Cl(mktdata)), 
                                n = maPeriod, maType = 'SMA',sd = bbBreakout
@@ -113,7 +111,6 @@ add.indicator(strat, name = "BBands",
 
 # Add the signals -  Go long on a cross of the close greater than the breakout band and close on a cross 
 # less than the close band. Signals reversed for a short.
-
 add.signal(strat, name = "sigCrossover", 
            arguments = list(columns=c(quote(Cl(mktdata)),"up.BBands_breakout"),
                             relationship = "gt"
@@ -143,7 +140,6 @@ add.signal(strat, name = "sigCrossover",
 )
 
 # Add the rules - what trades to make on the signals giving using osMaxPos to limit positions.
-
 add.rule(strat, name = 'ruleSignal', 
          arguments = list(sigcol = "long_entry", 
                           sigval = TRUE, orderqty = 100, ordertype = 'market', 
@@ -215,13 +211,30 @@ out <- apply.paramset(strat, paramset.label = "BB_OPT",
 
 stats <- out$tradeStats
 
-# It is possible to subset the trade stats by symbol for multiple symbols using e.g.
+# A loop to investigate the parameters via a 3D graph
+for (sym in symbol){
+  dfName <- paste(sym,"stats", sep = "")
+  statSubsetDf <- subset(stats, Symbol == sym)
+  assign(dfName, statSubsetDf)
+  tradeGraphs(stats = statSubsetDf, 
+              free.params=c("bb_break","ma_b"),
+              statistics = c("Ann.Sharpe","Profit.To.Max.Draw","Min.Equity"), 
+              title = sym)
+}
 
-COstats <- subset(stats, Symbol == "CO") 
+# Or use a heatmap to look at one parameter at a time
+for (sym in symbol){
+  dfName <- paste(sym,"stats", sep = "")
+  statSubsetDf <- subset(stats, Symbol == sym)
+  assign(dfName, statSubsetDf)
+  z <- tapply(X=statSubsetDf$Ann.Sharpe, 
+              INDEX = list(statSubsetDf$bb_break,statSubsetDf$ma_b), 
+              FUN = median)
+  x <- as.numeric(rownames(z))
+  y <- as.numeric(colnames(z))
+  filled.contour(x=x,y=y,z=z,color=heat.colors,xlab="bbreak",ylab="MA")
+  title(sym)
+}
 
-tradeGraphs(stats = stats, 
-            free.params=c("bb_break","ma_b"),
-            statistics = c("Net.Trading.PL","Max.Drawdown","Ann.Sharpe"), 
-            title = "BB Scan")
 
 Sys.setenv(TZ=ttz)                                             # Return to original time zone
