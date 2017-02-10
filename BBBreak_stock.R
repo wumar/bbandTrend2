@@ -3,6 +3,7 @@
 # defined as the close price crossing a  number of standard deviations away from the central
 # moving average. THe position is closed when the close price crosses back below another number
 # of standard deviations from the central moving average. Negative number means the other way.
+# Trying to rebalancing rules working but no dice so far in this branch
 
 library(quantstrat)       # Required package for strategy back testing
 ttz<-Sys.getenv('TZ')     # Time zone to UTC, saving original time zone
@@ -156,7 +157,17 @@ add.rule(strat, name = 'ruleSignal',
          type ='exit', label = "SX"
          )
 
-out <- applyStrategy(strategy=strat , portfolios=portfolio.st) # Attempt the strategy
+add.rule(strat, 'rulePctEquity',
+         arguments=list(rebalance_on='months',
+                        trade.percent=.02,
+                        refprice=quote(last(getPrice(mktdata)[paste('::',curIndex,sep='')])[,1]),
+                        digits=0
+         ),
+         type='rebalance',
+         label='rebalance')
+
+
+out <- applyStrategy.rebalancing(strategy=strat , portfolios=portfolio.st) # Attempt the strategy
 updatePortf(Portfolio = portfolio.st)                          # Update the portfolio
 updateAcct(name = account.st)
 updateEndEq(account.st)
