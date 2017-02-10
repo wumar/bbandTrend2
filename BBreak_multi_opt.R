@@ -21,7 +21,7 @@ portfolio.st <- "BB1"       # Portfolio name
 account.st   <- "BB1"       # Account name
 maPeriod     <- seq(20, 150, by = 10)       # moving average period
 bbBreakout   <- seq(1, 3, by = 0.25)           # multiple of SD for breakout 
-bbClose      <- 0                          # multiple of SD for close
+bbClose      <- 1                          # multiple of SD for close
 
 # This function sets the standard devation parameter to pass to the 
 # Bolinger Band indicator function
@@ -64,8 +64,9 @@ currency('USD')                         # set USD as a base currency
 symbol <- c("LSU","RR","CO","NG","OJ")  # Universe selection
 
 # if run previously, run this code
-rm.strat(portfolio.st)
 delete.paramset(portfolio.st,"BB_OPT")
+rm.strat(portfolio.st)
+
 
 # set the instument as a future and get the data from the csv file
 for (sym in symbol){
@@ -210,6 +211,11 @@ out <- apply.paramset(strat, paramset.label = "BB_OPT",
                       portfolio=portfolio.st, account = account.st, nsamples=0, verbose = TRUE)
 
 stats <- out$tradeStats
+wd <- getwd()
+csv_file <- paste(wd,"closesd",bbClose,".csv", sep="")
+out <- write.csv(stats,             # write to file
+                 file = csv_file,
+                 quote = FALSE, row.names = TRUE)
 
 # A loop to investigate the parameters via a 3D graph
 for (sym in symbol){

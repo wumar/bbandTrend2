@@ -1,0 +1,103 @@
+---
+title: "Bollinger Band Performance Visualization"
+output: html_notebook
+---
+
+Here the output of the BBBreak_multi_opt script is analysed. It calls elements from the global environment, so unless the code has been run and names are the same this won't be much use. 
+
+First lets look at the Annual sharpe ratio and how it varies with the amount of standard deviatons and the moving average value to which the breakout bollinger band, when the closing standard deviation is set to 1.
+
+```{r}
+for (sym in symbol){
+  dfName <- paste(sym,"stats", sep = "")
+  statSubsetDf <- subset(stats1, Symbol == sym)
+  assign(dfName, statSubsetDf)
+  z <- tapply(X=statSubsetDf$Ann.Sharpe, 
+              INDEX = list(statSubsetDf$bb_break,statSubsetDf$ma_b), 
+              FUN = median)
+  x <- as.numeric(rownames(z))
+  y <- as.numeric(colnames(z))
+  filled.contour(x=x,y=y,z=z,color=heat.colors,xlab="bbreak",ylab="MA")
+  title(sym)
+}
+```
+and now with the closing standard deviation set to 0.
+```{r}
+for (sym in symbol){
+  dfName <- paste(sym,"stats", sep = "")
+  statSubsetDf <- subset(stats0, Symbol == sym)
+  assign(dfName, statSubsetDf)
+  z <- tapply(X=statSubsetDf$Ann.Sharpe, 
+              INDEX = list(statSubsetDf$bb_break,statSubsetDf$ma_b), 
+              FUN = median)
+  x <- as.numeric(rownames(z))
+  y <- as.numeric(colnames(z))
+  filled.contour(x=x,y=y,z=z,color=heat.colors,xlab="bbreak",ylab="MA")
+  title(sym)
+}
+```
+
+OK lets now compare profit to maximum drawdown. SD = 1
+
+```{r}
+for (sym in symbol){
+  dfName <- paste(sym,"stats", sep = "")
+  statSubsetDf <- subset(stats1, Symbol == sym)
+  assign(dfName, statSubsetDf)
+  z <- tapply(X=statSubsetDf$Profit.To.Max.Draw, 
+              INDEX = list(statSubsetDf$bb_break,statSubsetDf$ma_b), 
+              FUN = median)
+  x <- as.numeric(rownames(z))
+  y <- as.numeric(colnames(z))
+  filled.contour(x=x,y=y,z=z,color=heat.colors,xlab="bbreak",ylab="MA")
+  title(sym)
+}
+```
+SD = 0
+```{r}
+for (sym in symbol){
+  dfName <- paste(sym,"stats", sep = "")
+  statSubsetDf <- subset(stats0, Symbol == sym)
+  assign(dfName, statSubsetDf)
+  z <- tapply(X=statSubsetDf$Profit.To.Max.Draw, 
+              INDEX = list(statSubsetDf$bb_break,statSubsetDf$ma_b), 
+              FUN = median)
+  x <- as.numeric(rownames(z))
+  y <- as.numeric(colnames(z))
+  filled.contour(x=x,y=y,z=z,color=heat.colors,xlab="bbreak",ylab="MA")
+  title(sym)
+}
+```
+
+OK What about minimum balance?
+
+```{r}
+for (sym in symbol){
+  dfName <- paste(sym,"stats", sep = "")
+  statSubsetDf <- subset(stats1, Symbol == sym)
+  assign(dfName, statSubsetDf)
+  z <- tapply(X=statSubsetDf$Min.Equity, 
+              INDEX = list(statSubsetDf$bb_break,statSubsetDf$ma_b), 
+              FUN = median)
+  x <- as.numeric(rownames(z))
+  y <- as.numeric(colnames(z))
+  filled.contour(x=x,y=y,z=z,color=heat.colors,xlab="bbreak",ylab="MA")
+  title(sym)
+}
+```
+
+```{r}
+for (sym in symbol){
+  dfName <- paste(sym,"stats", sep = "")
+  statSubsetDf <- subset(stats0, Symbol == sym)
+  assign(dfName, statSubsetDf)
+  z <- tapply(X=statSubsetDf$Min.Equity, 
+              INDEX = list(statSubsetDf$bb_break,statSubsetDf$ma_b), 
+              FUN = median)
+  x <- as.numeric(rownames(z))
+  y <- as.numeric(colnames(z))
+  filled.contour(x=x,y=y,z=z,color=heat.colors,xlab="bbreak",ylab="MA")
+  title(sym)
+}
+```
+
