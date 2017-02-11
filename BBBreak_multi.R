@@ -182,6 +182,7 @@ add.rule(strat, 'rulePctEquity',
          type='rebalance',
          label='rebalance')
 
+registerDoParallel(cores=detectCores())
 out <- applyStrategy.rebalancing(strategy=strat , portfolios=portfolio.st) # Attempt the strategy
 updatePortf(Portfolio = portfolio.st)                          # Update the portfolio
 updateAcct(name = account.st)
