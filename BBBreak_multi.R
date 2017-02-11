@@ -191,11 +191,11 @@ updateEndEq(account.st)
 for (sym in symbol){
   chart.Posn(Portfolio = portfolio.st, Symbol = sym, TA="add_BBands(n=20,sd=2)")          # Chart the position
 }
-stats <- tradeStats(portfolio.st)
+stats <- tradeStats(portfolio.st) # Get the trade stats
 
+# Plot the returns vs benchmark
 eq1 <- getAccount(account.st)$summary$End
 rt1 <- Return.calculate(eq1,"log")
-
 getSymbols("^GSPC", from = '2000-01-01')
 rt2 <- periodReturn(GSPC, period = "daily")
 returns <- cbind(rt1,rt2)
@@ -203,4 +203,4 @@ colnames(returns) <- c("BB","SP500")
 chart.CumReturns(returns,colorset=c(2,4),legend.loc="topleft",
                  main="BBand to Benchmark Comparison",ylab="cum return",xlab="",
                  minor.ticks=FALSE)
-Sys.setenv(TZ=ttz)                                             # Return to original time zone
+Sys.setenv(TZ=ttz)                      # Return to original time zone
