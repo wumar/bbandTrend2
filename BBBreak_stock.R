@@ -3,7 +3,7 @@
 # defined as the close price crossing a  number of standard deviations away from the central
 # moving average. THe position is closed when the close price crosses back below another number
 # of standard deviations from the central moving average. Negative number means the other way.
-# Trying to rebalancing rules working but no dice so far in this branch
+# Rebalancing rules are working but really need risk based order sizing rule.
 
 library(quantstrat)       # Required package for strategy back testing
 ttz<-Sys.getenv('TZ')     # Time zone to UTC, saving original time zone
@@ -14,7 +14,8 @@ portfolio.st <- "BB1"       # Portfolio name
 account.st   <- "BB1"       # Account name
 maPeriod     <- 100         # moving average period
 bbBreakout   <- 2           # multiple of SD for breakout 
-bbClose      <- 0           # multiple of SD for close
+bbClose      <- -1           # multiple of SD for close
+initEq       <- 10000     # this parameter is required to get pct equity rebalancing to work
 
 # This function sets the standard devation parameter to pass to the 
 # Bolinger Band indicator function
@@ -58,17 +59,17 @@ currency('USD')             # set USD as a base currency
 # Universe selection
 symbol <- "GSPC" # At this stage is only one symbol
 
-# if run previously, run this code
-rm.strat(portfolio.st)
-
 # set the instument as a future and get the data from the csv file
 stock(symbol, currency = "USD", multiplier = 1)
 getSymbols("^GSPC", from = '1995-01-01')
 
+# if run previously, run this code from here down
+rm.strat(portfolio.st)
+
 # initialize the portfolio, account and orders. Starting equity $10K and assuming data post 1998.
 
 initPortf(portfolio.st, symbols = symbol, initDate = "1995-01-01")
-initAcct(account.st, portfolios = portfolio.st, initEq = 1000000, initDate = "1995-01-01")
+initAcct(account.st, portfolios = portfolio.st, initEq = initEq, initDate = "1995-01-01")
 initOrders(portfolio = portfolio.st, initDate = "1995-01-01")
 
 # define the strategy with a position limit to prevent multiple trades in a direction
@@ -159,7 +160,7 @@ add.rule(strat, name = 'ruleSignal',
 
 add.rule(strat, 'rulePctEquity',
          arguments=list(rebalance_on='months',
-                        trade.percent=.02,
+                        trade.percent=5,
                         refprice=quote(last(getPrice(mktdata)[paste('::',curIndex,sep='')])[,1]),
                         digits=0
          ),
@@ -168,12 +169,15 @@ add.rule(strat, 'rulePctEquity',
 
 
 out <- applyStrategy.rebalancing(strategy=strat , portfolios=portfolio.st) # Attempt the strategy
-updatePortf(Portfolio = portfolio.st)                          # Update the portfolio
+updatePortf(Portfolio = portfolio.st)                                      # Update the portfolio
 updateAcct(name = account.st)
 updateEndEq(account.st)
+
+#chart the position
 chart.Posn(Portfolio = portfolio.st, Symbol = symbol, TA="add_BBands(n=20,sd=2)", Dates = "1995-01::2016-05")          # Chart the position
 stats <- tradeStats(portfolio.st)
 
+#plot the returns vs buy and hold
 eq1 <- getAccount(account.st)$summary$End.Eq
 rt1 <- Return.calculate(eq1,"log")
 rt2 <- periodReturn(GSPC, period = "daily")
