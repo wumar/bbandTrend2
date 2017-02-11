@@ -5,21 +5,25 @@
 # of standard deviations from the central moving average. Negative number means the other way.
 # Rebalancing rules are working but really need risk based order sizing rule.
 
+# Library and time zone setup
 library(quantstrat)       # Required package for strategy back testing
 ttz<-Sys.getenv('TZ')     # Time zone to UTC, saving original time zone
 Sys.setenv(TZ='UTC')
 
+# Quantstrat general variables
 strat        <- "BB1"       # Give the stratgey a name variable
 portfolio.st <- "BB1"       # Portfolio name
 account.st   <- "BB1"       # Account name
+initEq       <- 10000     # this parameter is required to get pct equity rebalancing to work
+
+# Strategy specific variables
 maPeriod     <- 100         # moving average period
 bbBreakout   <- 2           # multiple of SD for breakout 
 bbClose      <- -1           # multiple of SD for close
-initEq       <- 10000     # this parameter is required to get pct equity rebalancing to work
 
+# Strategy Functions
 # This function sets the standard devation parameter to pass to the 
 # Bolinger Band indicator function
-
 closeSD_final <-function(user_SD){
   if(user_SD == 0){
     returnSD <- 1
@@ -32,7 +36,6 @@ closeSD_final <-function(user_SD){
 # The following two functions set, based on the bbClose variable, which band the close must
 # cross in order for the strategy to exit. If number os +ve it is on the same side of the 
 # moving average as the initial move, 0 is the MA and -ve is on the other side of the MA.
-
 longExitBand <- function(user_SD){
   if(user_SD == 0){
     longBand <- "mavg.BBands_close"
@@ -55,9 +58,7 @@ shortExitBand <- function(user_SD){
 }
 
 currency('USD')             # set USD as a base currency
-
-# Universe selection
-symbol <- "GSPC" # At this stage is only one symbol
+symbol <- "GSPC"            # Universe selection At this stage is only one symbol
 
 # set the instument as a future and get the data from the csv file
 stock(symbol, currency = "USD", multiplier = 1)
@@ -66,8 +67,7 @@ getSymbols("^GSPC", from = '1995-01-01')
 # if run previously, run this code from here down
 rm.strat(portfolio.st)
 
-# initialize the portfolio, account and orders. Starting equity $10K and assuming data post 1998.
-
+# initialize the portfolio, account and orders. Starting equity and assuming data post 1995.
 initPortf(portfolio.st, symbols = symbol, initDate = "1995-01-01")
 initAcct(account.st, portfolios = portfolio.st, initEq = initEq, initDate = "1995-01-01")
 initOrders(portfolio = portfolio.st, initDate = "1995-01-01")
