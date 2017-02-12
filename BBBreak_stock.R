@@ -17,9 +17,9 @@ account.st   <- "BB1"       # Account name
 initEq       <- 10000     # this parameter is required to get pct equity rebalancing to work
 
 # Strategy specific variables
-maPeriod     <- 100         # moving average period
+maPeriod     <- 200         # moving average period
 bbBreakout   <- 2           # multiple of SD for breakout 
-bbClose      <- -1           # multiple of SD for close
+bbClose      <- -2           # multiple of SD for close
 
 # Strategy Functions
 # This function sets the standard devation parameter to pass to the 
@@ -65,6 +65,7 @@ stock(symbol, currency = "USD", multiplier = 1)
 getSymbols("^GSPC", from = '1995-01-01')
 
 # if run previously, run this code from here down
+
 rm.strat(portfolio.st)
 
 # initialize the portfolio, account and orders. Starting equity and assuming data post 1995.
@@ -160,7 +161,7 @@ add.rule(strat, name = 'ruleSignal',
 
 add.rule(strat, 'rulePctEquity',
          arguments=list(rebalance_on='months',
-                        trade.percent=5,
+                        trade.percent=1,
                         refprice=quote(last(getPrice(mktdata)[paste('::',curIndex,sep='')])[,1]),
                         digits=0
          ),
@@ -186,4 +187,4 @@ colnames(returns) <- c("BB","SP500")
 chart.CumReturns(returns,colorset=c(2,4),legend.loc="topleft",
                  main="BBand to Benchmark Comparison",ylab="cum return",xlab="",
                  minor.ticks=FALSE)
-Sys.setenv(TZ=ttz)                                             # Return to original time zone
+ Sys.setenv(TZ=ttz)                                             # Return to original time zone

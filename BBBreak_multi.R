@@ -21,9 +21,9 @@ initEq       <- 100000      # this parameter is required to get pct equity rebal
 xtsDates    <- "2006/"      # Variable for the point in time you want your prices series to line up from
 
 # Strategy specific variables
-maPeriod     <- 20          # moving average period
+maPeriod     <- 80          # moving average period
 bbBreakout   <- 2           # multiple of SD for breakout 
-bbClose      <- 2           # multiple of SD for close
+bbClose      <- -2           # multiple of SD for close
 
 
 # Strategy Functions
@@ -175,7 +175,7 @@ add.rule(strat, name = 'ruleSignal',
 
 add.rule(strat, 'rulePctEquity',
          arguments=list(rebalance_on='months',
-                        trade.percent=1,
+                        trade.percent=0.2,
                         refprice=quote(last(getPrice(mktdata)[paste('::',curIndex,sep='')])[,1]),
                         digits=0
          ),
